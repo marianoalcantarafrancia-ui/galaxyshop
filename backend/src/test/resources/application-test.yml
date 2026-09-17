@@ -1,0 +1,31 @@
+# =============================================================================
+#  Perfil de pruebas: base de datos en memoria y sin llamadas a Keycloak.
+#  Los tokens los fabrica MockMvc con la misma forma que emite Keycloak.
+# =============================================================================
+spring:
+  datasource:
+    url: jdbc:h2:mem:galaxyshop-test;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/realms/galaxyshop
+
+app:
+  security:
+    # Sin Keycloak levantado no hay a quien preguntar: la seguridad granular se
+    # prueba contra el servidor real desde verificar.sh y desde Postman.
+    granular:
+      enabled: false
+
+logging:
+  level:
+    org.springframework.security: WARN
+    org.hibernate: WARN

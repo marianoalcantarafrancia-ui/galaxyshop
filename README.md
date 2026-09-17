@@ -88,6 +88,9 @@ Los scripts son idempotentes: se pueden repetir sin duplicar nada.
 ## Pruebas
 
 ```bash
+# Pruebas unitarias del back-end (no necesitan Keycloak levantado)
+cd backend && mvn test
+
 # Matriz de acceso (público / privado / especial) + seguridad granular
 ./verificar.sh
 
@@ -95,6 +98,12 @@ Los scripts son idempotentes: se pueden repetir sin duplicar nada.
 cd postman
 npx newman run GalaxyShop.postman_collection.json -e GalaxyShop.postman_environment.json
 ```
+
+| Suite | Qué cubre | Requiere |
+|-------|-----------|----------|
+| `mvn test` — 11 pruebas | el converter de roles y las reglas del filtro, con tokens simulados | nada |
+| `./verificar.sh` — 43 comprobaciones | los diez puntos de la rúbrica contra el entorno real | Docker + API |
+| Newman — 52 peticiones, 82 aserciones | flujos completos, incluidas las decisiones UMA | Docker + API |
 
 También se puede importar la colección y el entorno en Postman y ejecutar la
 carpeta *0. Autenticación* antes que las demás.

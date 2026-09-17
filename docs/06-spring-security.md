@@ -227,3 +227,27 @@ Tres comprobaciones automáticas en cada petición:
 
 El 403 nunca revela **qué** policy denegó el acceso: esa información se queda
 en el log del servidor.
+
+## 6.8 Cómo se prueba todo esto
+
+```bash
+cd backend && mvn test      # 11 pruebas, sin necesidad de Keycloak
+```
+
+`SeguridadTest` fabrica tokens con la misma forma que emite Keycloak y los pasa
+**por el converter real de la aplicación**:
+
+```java
+Jwt token = Jwt.withTokenValue("token-de-prueba")
+        .claim("realm_access",    Map.of("roles", List.of("gs-admin")))
+        .claim("resource_access", Map.of("shop-backend", Map.of("roles", List.of("catalog-read"))))
+        .build();
+
+return jwt().jwt(token).authorities(converter.convert(token).getAuthorities());
+```
+
+Ese detalle importa: el post-processor `jwt()` de Spring, si se le deja derivar
+las authorities por su cuenta, solo mira el claim `scope` y **nunca vería los
+roles de Keycloak**. Al pasar por el converter propio, las pruebas verifican de
+paso que la traducción de roles funciona; si dejara de hacerlo, los casos
+positivos fallarían con 403.

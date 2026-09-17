@@ -211,6 +211,8 @@ Verificable en Postman: *0. Autenticación → Refresh token*.
 | **Export/import reproducible** | `docker compose down -v && up -d` reconstruye todo |
 | **Swagger UI con OAuth2 + PKCE** | probar la API iniciando sesión desde el navegador |
 | **Colección Postman con aserciones** | 52 peticiones, 82 aserciones, ejecutable con Newman |
+| **Pruebas unitarias de seguridad** | 11 pruebas con MockMvc y tokens simulados, sin necesitar Keycloak |
+| **Script de verificación integral** | `verificar.sh`: 43 comprobaciones sobre el entorno real |
 
 ---
 

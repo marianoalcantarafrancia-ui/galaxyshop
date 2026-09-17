@@ -1,12 +1,13 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ApiService, Pedido } from '../../core/api.service';
 import { KeycloakService } from '../../core/keycloak.service';
 
 /** NIVEL PRIVADO: exige sesion (authGuard). */
 @Component({
   selector: 'app-pedidos',
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, RouterLink],
   templateUrl: './pedidos.html'
 })
 export class Pedidos implements OnInit {

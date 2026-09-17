@@ -1,0 +1,63 @@
+<h1>Administracion</h1>
+<p class="subtitulo">
+  Seccion reservada al rol de realm <code>gs-admin</code>.
+</p>
+
+<h2>Reglas de seguridad administrables</h2>
+<p style="font-size:.85rem;color:var(--texto-suave);margin-top:-.5rem">
+  Estas reglas viven en la tabla <code>security_rule</code> de la base de datos y
+  el <code>SecurityFilterChain</code> las publica al arrancar: se puede abrir o
+  cerrar un endpoint sin recompilar la aplicacion.
+</p>
+<table class="tabla" style="margin-bottom:2rem">
+  <thead><tr><th class="num">Orden</th><th>Metodo</th><th>Patron</th><th>Acceso</th><th>Descripcion</th></tr></thead>
+  <tbody>
+    @for (r of reglas(); track r.patron) {
+      <tr>
+        <td class="num">{{ r.orden }}</td>
+        <td>{{ r.metodo }}</td>
+        <td><code>{{ r.patron }}</code></td>
+        <td>
+          @if (r.publico) {
+            <span class="insignia insignia--activo">PUBLICO</span>
+          } @else if (r.roles) {
+            @for (rol of r.roles.split(','); track rol) { <span class="insignia insignia--rol">{{ rol }}</span> }
+          } @else {
+            <span class="insignia">AUTENTICADO</span>
+          }
+        </td>
+        <td style="font-size:.85rem;color:var(--texto-suave)">{{ r.descripcion }}</td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+<h2>Todos los pedidos de la cadena</h2>
+@if (cargando()) {
+  <p class="cargando">Cargando...</p>
+} @else if (pedidos().length === 0) {
+  <div class="aviso aviso--info">No hay pedidos registrados.</div>
+} @else {
+  <table class="tabla">
+    <thead>
+      <tr><th>Fecha</th><th>Cliente</th><th>Sede</th><th>Producto</th>
+          <th class="num">Cant.</th><th class="num">Total</th><th>Estado</th></tr>
+    </thead>
+    <tbody>
+      @for (p of pedidos(); track p.id) {
+        <tr>
+          <td>{{ p.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ p.cliente }}</td>
+          <td>{{ p.sede ?? '-' }}</td>
+          <td>{{ p.producto }}</td>
+          <td class="num">{{ p.cantidad }}</td>
+          <td class="num">S/ {{ p.total | number:'1.2-2' }}</td>
+          <td>
+            <span class="insignia" [class.insignia--activo]="p.estado === 'REGISTRADO'"
+                  [class.insignia--anulado]="p.estado === 'ANULADO'">{{ p.estado }}</span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

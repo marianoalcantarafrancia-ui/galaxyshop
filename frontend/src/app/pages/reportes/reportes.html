@@ -1,0 +1,42 @@
+<h1>Reportes de venta</h1>
+<p class="subtitulo">
+  Acceso especial. La ruta esta protegida por <code>rolesGuard</code> en Angular,
+  por el <code>SecurityFilterChain</code> en la API y por la Permission
+  <code>Ver reportes</code> en Keycloak.
+</p>
+
+@if (error()) {
+  <div class="aviso aviso--error">{{ error() }}</div>
+} @else if (cargando()) {
+  <p class="cargando">Calculando...</p>
+} @else if (filas().length === 0) {
+  <div class="aviso aviso--info">Todavia no hay pedidos registrados.</div>
+} @else {
+  <div class="rejilla" style="margin-bottom:1.5rem">
+    <div class="tarjeta">
+      <div style="font-size:.8rem;color:var(--texto-suave)">Pedidos vigentes</div>
+      <div style="font-size:1.8rem;font-weight:600">{{ totalPedidos() }}</div>
+    </div>
+    <div class="tarjeta">
+      <div style="font-size:.8rem;color:var(--texto-suave)">Monto total</div>
+      <div style="font-size:1.8rem;font-weight:600">S/ {{ total() | number:'1.2-2' }}</div>
+    </div>
+    <div class="tarjeta">
+      <div style="font-size:.8rem;color:var(--texto-suave)">Secciones con venta</div>
+      <div style="font-size:1.8rem;font-weight:600">{{ filas().length }}</div>
+    </div>
+  </div>
+
+  <table class="tabla">
+    <thead><tr><th>Seccion</th><th class="num">Pedidos</th><th class="num">Monto</th></tr></thead>
+    <tbody>
+      @for (f of filas(); track f.catalogo) {
+        <tr>
+          <td>{{ f.catalogo }}</td>
+          <td class="num">{{ f.pedidos }}</td>
+          <td class="num">S/ {{ f.montoTotal | number:'1.2-2' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

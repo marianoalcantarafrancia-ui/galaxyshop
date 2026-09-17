@@ -1,0 +1,105 @@
+# =============================================================================
+#  GalaxyShop - Proyecto Final "Security with Keycloak"
+#  Rubrica #1: Instalacion de Keycloak con Docker Compose + BD persistente
+# =============================================================================
+services:
+
+  # ---------------------------------------------------------------------------
+  # Base de datos persistente de Keycloak (Rubrica #1)
+  # ---------------------------------------------------------------------------
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: gs-keycloak-db
+    environment:
+      POSTGRES_DB: ${KC_DB_NAME:-keycloak}
+      POSTGRES_USER: ${KC_DB_USER:-keycloak}
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD:-keycloak}
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    ports:
+      - "${KC_DB_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KC_DB_USER:-keycloak} -d ${KC_DB_NAME:-keycloak}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [galaxyshop]
+
+  # ---------------------------------------------------------------------------
+  # Base de datos de la aplicacion de negocio (backend Spring Boot)
+  # ---------------------------------------------------------------------------
+  app-db:
+    image: postgres:16-alpine
+    container_name: gs-app-db
+    environment:
+      POSTGRES_DB: ${APP_DB_NAME:-galaxyshop}
+      POSTGRES_USER: ${APP_DB_USER:-galaxyshop}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:-galaxyshop}
+    volumes:
+      - app-db-data:/var/lib/postgresql/data
+    ports:
+      - "${APP_DB_PORT:-5434}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${APP_DB_USER:-galaxyshop} -d ${APP_DB_NAME:-galaxyshop}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [galaxyshop]
+
+  # ---------------------------------------------------------------------------
+  # Keycloak 26 (Quarkus distribution)
+  #   - BD persistente PostgreSQL       -> Rubrica #1
+  #   - Import automatico de realms     -> Rubrica #2
+  #   - Tema personalizado montado      -> Rubrica #8
+  # ---------------------------------------------------------------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    container_name: gs-keycloak
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    command:
+      - start-dev
+      - --import-realm
+    environment:
+      # Zona horaria del negocio: las Time Policies de Authorization Services
+      # se evaluan con el reloj del servidor, no con el del cliente.
+      TZ: ${TZ:-America/Lima}
+      # --- Admin bootstrap ---
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD:-Admin#2026}
+      # --- Base de datos persistente ---
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KC_DB_NAME:-keycloak}
+      KC_DB_USERNAME: ${KC_DB_USER:-keycloak}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD:-keycloak}
+      # --- HTTP / Hostname ---
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      # --- Identity Providers externos (Rubrica #7) ---
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-changeme}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-changeme}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-changeme}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-changeme}
+    ports:
+      - "${KC_PORT:-8081}:8080"
+    volumes:
+      - ./keycloak/realms:/opt/keycloak/data/import:ro
+      - ./keycloak/themes:/opt/keycloak/themes:ro
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    networks: [galaxyshop]
+
+volumes:
+  keycloak-db-data:
+  app-db-data:
+
+networks:
+  galaxyshop:
+    driver: bridge

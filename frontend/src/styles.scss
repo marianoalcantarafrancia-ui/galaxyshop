@@ -1,0 +1,147 @@
+/* =========================================================================
+   GalaxyShop - estilos base
+   ========================================================================= */
+:root {
+  --primario: #1d4ed8;
+  --primario-oscuro: #1e40af;
+  --primario-suave: #e0e7ff;
+  --exito: #15803d;
+  --exito-suave: #dcfce7;
+  --peligro: #b91c1c;
+  --peligro-suave: #fee2e2;
+  --aviso: #b45309;
+  --aviso-suave: #fef3c7;
+
+  --fondo: #f8fafc;
+  --fondo-sutil: #f1f5f9;
+  --superficie: #ffffff;
+  --borde: #e2e8f0;
+  --texto: #0f172a;
+  --texto-suave: #64748b;
+
+  --radio: .75rem;
+  --sombra: 0 1px 2px rgba(15, 23, 42, .06), 0 4px 12px rgba(15, 23, 42, .04);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+h1 { font-size: 1.6rem; margin: 0 0 .35rem; }
+h2 { font-size: 1.2rem; margin: 2rem 0 .75rem; }
+p  { margin: 0 0 1rem; }
+
+.subtitulo { color: var(--texto-suave); margin-bottom: 1.75rem; }
+
+/* --- botones --- */
+.boton {
+  font: inherit;
+  font-size: .875rem;
+  padding: .45rem .9rem;
+  border-radius: .5rem;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--texto);
+  cursor: pointer;
+  transition: background .15s, border-color .15s, opacity .15s;
+
+  &:hover:not(:disabled) { background: var(--fondo-sutil); }
+  &:disabled { opacity: .45; cursor: not-allowed; }
+
+  &--primario {
+    background: var(--primario);
+    border-color: var(--primario);
+    color: #fff;
+    &:hover:not(:disabled) { background: var(--primario-oscuro); }
+  }
+  &--sutil { background: transparent; border-color: transparent; color: var(--texto-suave); }
+  &--peligro {
+    background: var(--peligro-suave); border-color: transparent; color: var(--peligro);
+  }
+}
+
+/* --- tarjetas --- */
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 1.15rem;
+  box-shadow: var(--sombra);
+}
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+/* --- tablas --- */
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  overflow: hidden;
+  font-size: .9rem;
+
+  th, td { padding: .6rem .8rem; text-align: left; border-bottom: 1px solid var(--borde); }
+  th { background: var(--fondo-sutil); font-weight: 600; font-size: .8rem;
+       text-transform: uppercase; letter-spacing: .03em; color: var(--texto-suave); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--fondo-sutil); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+}
+
+/* --- avisos --- */
+.aviso {
+  padding: .75rem 1rem;
+  border-radius: .5rem;
+  font-size: .9rem;
+  margin-bottom: 1rem;
+
+  &--info    { background: var(--primario-suave); color: var(--primario-oscuro); }
+  &--exito   { background: var(--exito-suave);    color: var(--exito); }
+  &--error   { background: var(--peligro-suave);  color: var(--peligro); }
+  &--atencion{ background: var(--aviso-suave);    color: var(--aviso); }
+}
+
+/* --- insignias --- */
+.insignia {
+  display: inline-block;
+  font-size: .72rem;
+  padding: .15rem .5rem;
+  border-radius: 1rem;
+  background: var(--fondo-sutil);
+  border: 1px solid var(--borde);
+  color: var(--texto-suave);
+  margin: .1rem .15rem .1rem 0;
+
+  &--rol     { background: var(--primario-suave); color: var(--primario); border-color: transparent; }
+  &--permiso { background: var(--exito-suave);    color: var(--exito);    border-color: transparent; }
+  &--anulado { background: var(--peligro-suave);  color: var(--peligro);  border-color: transparent; }
+  &--activo  { background: var(--exito-suave);    color: var(--exito);    border-color: transparent; }
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  margin-bottom: .75rem;
+
+  label { font-size: .8rem; font-weight: 600; color: var(--texto-suave); }
+  input, select, textarea {
+    font: inherit; font-size: .9rem; padding: .45rem .6rem;
+    border: 1px solid var(--borde); border-radius: .5rem; background: var(--superficie);
+  }
+}
+
+.cargando { color: var(--texto-suave); font-size: .9rem; padding: 1rem 0; }

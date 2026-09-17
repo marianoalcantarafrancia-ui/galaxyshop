@@ -1,0 +1,101 @@
+# =============================================================================
+#  GalaxyShop API - configuracion
+#
+#  Rubrica #4: los valores de seguridad se personalizan aqui (segunda via),
+#  sin tocar el codigo de SecurityConfig.
+# =============================================================================
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+
+spring:
+  application:
+    name: galaxyshop-api
+
+  datasource:
+    url: jdbc:postgresql://${APP_DB_HOST:localhost}:${APP_DB_PORT:5434}/${APP_DB_NAME:galaxyshop}
+    username: ${APP_DB_USER:galaxyshop}
+    password: ${APP_DB_PASSWORD:galaxyshop}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Emisor de los tokens: el realm de Keycloak.
+          issuer-uri: ${KEYCLOAK_ISSUER:http://localhost:8081/realms/galaxyshop}
+          # La API solo acepta tokens dirigidos a ella.
+          audiences:
+            - shop-backend
+
+  jackson:
+    default-property-inclusion: non_null
+
+# -----------------------------------------------------------------------------
+#  Personalizacion de la seguridad (leida por AppSecurityProperties)
+# -----------------------------------------------------------------------------
+app:
+  security:
+    # Rutas sin token
+    public-paths:
+      - /api/public/**
+      - /swagger-ui/**
+      - /swagger-ui.html
+      - /v3/api-docs/**
+      - /actuator/health
+      - /actuator/info
+      - /error
+
+    # Cliente de Keycloak del que se leen los roles en resource_access
+    resource-client-id: shop-backend
+
+    # Claims del token
+    realm-roles-claim: realm_access
+    principal-claim: preferred_username
+
+    # Origenes autorizados para el frontend Angular
+    allowed-origins:
+      - http://localhost:4200
+      - http://127.0.0.1:4200
+
+    # Suma al filtro las reglas de la tabla security_rule
+    database-rules-enabled: true
+
+    # Seguridad granular (Authorization Services / UMA 2.0)
+    granular:
+      enabled: ${GRANULAR_ENABLED:true}
+      audience: shop-backend
+      cache-seconds: 30
+
+# -----------------------------------------------------------------------------
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    oauth:
+      client-id: shop-frontend
+      use-pkce-with-authorization-code-grant: true
+    tags-sorter: alpha
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.galaxyshop.api: INFO
+    com.galaxyshop.api.security.AuthorizationGranularService: DEBUG
+    org.springframework.security: INFO

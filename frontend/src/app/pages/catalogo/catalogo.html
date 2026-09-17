@@ -1,0 +1,58 @@
+<h1>Catalogo</h1>
+<p class="subtitulo">
+  @if (keycloak.autenticado()) {
+    Vista autenticada: la API valido tu rol <code>catalog-read</code> y el permiso
+    granular <code>Catalogo#catalog:view</code>.
+  } @else {
+    Vista publica del escaparate. Inicia sesion para poder comprar.
+  }
+</p>
+
+@if (mensaje(); as m) {
+  <div class="aviso" [class.aviso--exito]="m.tipo === 'exito'" [class.aviso--error]="m.tipo === 'error'">
+    {{ m.texto }}
+  </div>
+}
+
+@if (cargando()) {
+  <p class="cargando">Cargando productos...</p>
+} @else {
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Seccion</th>
+        <th class="num">Precio</th>
+        <th class="num">Stock</th>
+        @if (puedeComprar() || puedeEliminar()) { <th>Acciones</th> }
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of productos(); track p.id) {
+        <tr>
+          <td>
+            <strong>{{ p.nombre }}</strong>
+            <div style="font-size:.8rem;color:var(--texto-suave)">{{ p.descripcion }}</div>
+          </td>
+          <td>{{ p.catalogo }}</td>
+          <td class="num">S/ {{ p.precioUnitario | number:'1.2-2' }}</td>
+          <td class="num">{{ p.stock }}</td>
+          @if (puedeComprar() || puedeEliminar()) {
+            <td>
+              <div style="display:flex;gap:.35rem;align-items:center">
+                @if (puedeComprar()) {
+                  <input type="number" min="1" max="100" [(ngModel)]="cantidades[p.id]"
+                         style="width:4rem;padding:.3rem .4rem;border:1px solid var(--borde);border-radius:.4rem">
+                  <button class="boton boton--primario" [disabled]="p.stock === 0" (click)="comprar(p)">Comprar</button>
+                }
+                @if (puedeEliminar()) {
+                  <button class="boton boton--peligro" (click)="eliminar(p)">Eliminar</button>
+                }
+              </div>
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+}

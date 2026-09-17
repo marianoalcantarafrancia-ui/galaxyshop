@@ -1,0 +1,54 @@
+<h1>Mis pedidos</h1>
+<p class="subtitulo">
+  Solo ves los pedidos registrados con tu usuario: el servicio filtra por el
+  <code>preferred_username</code> del token, y <code>&#64;PostAuthorize</code> impide
+  leer el pedido de otro cliente aunque se conozca su identificador.
+</p>
+
+@if (mensaje(); as m) {
+  <div class="aviso" [class.aviso--exito]="m.tipo === 'exito'" [class.aviso--error]="m.tipo === 'error'">
+    {{ m.texto }}
+  </div>
+}
+
+@if (cargando()) {
+  <p class="cargando">Cargando pedidos...</p>
+} @else if (pedidos().length === 0) {
+  <div class="tarjeta" style="text-align:center;padding:2.5rem">
+    <p style="margin:0;color:var(--texto-suave)">Todavia no tienes pedidos.</p>
+    <p style="margin:.5rem 0 0"><a class="boton boton--primario" href="/catalogo">Ir al catalogo</a></p>
+  </div>
+} @else {
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th>Fecha</th><th>Producto</th><th>Seccion</th>
+        <th class="num">Cant.</th><th class="num">Total</th>
+        <th>Estado</th>
+        @if (puedeAnular()) { <th></th> }
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of pedidos(); track p.id) {
+        <tr>
+          <td>{{ p.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ p.producto }}</td>
+          <td>{{ p.catalogo }}</td>
+          <td class="num">{{ p.cantidad }}</td>
+          <td class="num">S/ {{ p.total | number:'1.2-2' }}</td>
+          <td>
+            <span class="insignia" [class.insignia--activo]="p.estado === 'REGISTRADO'"
+                  [class.insignia--anulado]="p.estado === 'ANULADO'">{{ p.estado }}</span>
+          </td>
+          @if (puedeAnular()) {
+            <td>
+              @if (p.estado === 'REGISTRADO') {
+                <button class="boton boton--peligro" (click)="anular(p)">Anular</button>
+              }
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+}

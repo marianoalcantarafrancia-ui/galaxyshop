@@ -1,0 +1,52 @@
+<header class="cabecera">
+  <a class="marca" routerLink="/">
+    <span class="marca__icono">🛒</span>
+    <span class="marca__texto">Galaxy<strong>Shop</strong></span>
+  </a>
+
+  <nav class="menu">
+    <!-- PUBLICO: visible siempre -->
+    <a routerLink="/" routerLinkActive="activo" [routerLinkActiveOptions]="{exact: true}">Inicio</a>
+    <a routerLink="/catalogo" routerLinkActive="activo">Catalogo</a>
+
+    <!-- PRIVADO: solo con sesion iniciada -->
+    @if (keycloak.autenticado()) {
+      <a routerLink="/pedidos" routerLinkActive="activo">Mis pedidos</a>
+      <a routerLink="/perfil" routerLinkActive="activo">Mi perfil</a>
+    }
+
+    <!-- ESPECIAL: el menu se dibuja segun los roles del token -->
+    @if (keycloak.tieneAlgunRol('gs-auditor', 'gs-manager', 'gs-admin', 'report-read')) {
+      <a routerLink="/reportes" routerLinkActive="activo">Reportes</a>
+    }
+    @if (keycloak.tieneRol('gs-admin')) {
+      <a routerLink="/administracion" routerLinkActive="activo">Administracion</a>
+    }
+  </nav>
+
+  <div class="sesion">
+    @if (keycloak.autenticado()) {
+      <div class="sesion__usuario">
+        <span class="sesion__nombre">{{ keycloak.usuario() }}</span>
+        @if (keycloak.perfil()?.sede) {
+          <span class="etiqueta">{{ keycloak.perfil()!.sede }}</span>
+        }
+        <span class="etiqueta etiqueta--tier">{{ keycloak.perfil()?.categoria }}</span>
+      </div>
+      <button class="boton boton--sutil" (click)="keycloak.gestionarCuenta()">Mi cuenta</button>
+      <button class="boton" (click)="keycloak.logout()">Salir</button>
+    } @else {
+      <button class="boton boton--sutil" (click)="keycloak.registrarse()">Crear cuenta</button>
+      <button class="boton boton--primario" (click)="keycloak.login()">Iniciar sesion</button>
+    }
+  </div>
+</header>
+
+<main class="contenido">
+  <router-outlet />
+</main>
+
+<footer class="pie">
+  GalaxyShop &middot; Proyecto final del curso <em>Security with Keycloak</em> &middot;
+  Keycloak 26 + Spring Boot 3 + Angular 20
+</footer>

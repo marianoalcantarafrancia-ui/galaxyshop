@@ -1,0 +1,82 @@
+<h1>Mi perfil</h1>
+<p class="subtitulo">
+  Todo lo que aparece aqui sale del token emitido por Keycloak; la aplicacion no
+  guarda ningun dato de identidad por su cuenta.
+</p>
+
+@if (keycloak.perfil(); as p) {
+
+  <div class="rejilla" style="margin-bottom:1.5rem">
+    <div class="tarjeta">
+      <h3 style="margin:0 0 .6rem;font-size:.95rem">Identidad</h3>
+      <table style="font-size:.875rem;width:100%">
+        <tr><td style="color:var(--texto-suave);padding:.2rem 0">Usuario</td><td><strong>{{ p.usuario }}</strong></td></tr>
+        <tr><td style="color:var(--texto-suave);padding:.2rem 0">Nombre</td><td>{{ p.nombre }}</td></tr>
+        <tr><td style="color:var(--texto-suave);padding:.2rem 0">Correo</td><td>{{ p.email }}</td></tr>
+        <tr><td style="color:var(--texto-suave);padding:.2rem 0">Sede</td><td>{{ p.sede ?? '-' }}</td></tr>
+        <tr><td style="color:var(--texto-suave);padding:.2rem 0">Categoria</td><td>{{ p.categoria }}</td></tr>
+      </table>
+    </div>
+
+    <div class="tarjeta">
+      <h3 style="margin:0 0 .6rem;font-size:.95rem">Grupos</h3>
+      @for (g of p.grupos; track g) {
+        <div><span class="insignia">{{ g }}</span></div>
+      } @empty {
+        <p style="margin:0;color:var(--texto-suave);font-size:.875rem">Sin grupos asignados</p>
+      }
+      <p style="margin:.75rem 0 0;font-size:.78rem;color:var(--texto-suave)">
+        Los roles se heredan del grupo: no se asignan uno a uno a cada usuario.
+      </p>
+    </div>
+  </div>
+
+  <h2>Roles de realm</h2>
+  <div>
+    @for (r of rolesDeRealm(); track r) { <span class="insignia insignia--rol">{{ r }}</span> }
+  </div>
+
+  <h2>Roles del cliente shop-backend</h2>
+  <div>
+    @for (r of rolesDeCliente(); track r) { <span class="insignia insignia--rol">{{ r }}</span> }
+  </div>
+
+  <h2>Alcances (scopes) del token</h2>
+  <div>
+    @for (s of scopesOauth(); track s) { <span class="insignia">{{ s }}</span> }
+  </div>
+
+  <h2>Permisos granulares concedidos por Keycloak</h2>
+  <p style="font-size:.85rem;color:var(--texto-suave);margin-top:-.5rem">
+    Resultado de evaluar las Policies y Permissions del cliente <code>shop-backend</code>
+    (Authorization Services, UMA 2.0).
+  </p>
+  @if (p.permisosGranulares.length === 0) {
+    <div class="aviso aviso--atencion">
+      Keycloak no concedio ningun permiso granular a este usuario.
+    </div>
+  } @else {
+    <table class="tabla">
+      <thead><tr><th>Recurso</th><th>Scopes autorizados</th></tr></thead>
+      <tbody>
+        @for (perm of p.permisosGranulares; track perm.rsname) {
+          <tr>
+            <td><strong>{{ perm.rsname }}</strong></td>
+            <td>
+              @for (s of perm.scopes ?? []; track s) {
+                <span class="insignia insignia--permiso">{{ s }}</span>
+              } @empty { <span style="color:var(--texto-suave)">-</span> }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  <p style="margin-top:1.5rem">
+    <button class="boton" (click)="keycloak.gestionarCuenta()">Gestionar mi cuenta en Keycloak</button>
+  </p>
+
+} @else {
+  <p class="cargando">Cargando perfil...</p>
+}

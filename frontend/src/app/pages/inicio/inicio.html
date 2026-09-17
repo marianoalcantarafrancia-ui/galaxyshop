@@ -1,0 +1,55 @@
+<h1>Bienvenido a GalaxyShop</h1>
+<p class="subtitulo">
+  Tienda de comestibles asegurada con Keycloak. Esta pagina es <strong>publica</strong>:
+  se sirve sin token y cualquier visitante puede verla.
+</p>
+
+@if (!keycloak.autenticado()) {
+  <div class="aviso aviso--info">
+    Inicia sesion para registrar pedidos. Puedes usar tu cuenta de la tienda, o
+    entrar con <strong>GitHub</strong> o <strong>Google</strong> desde la pantalla de acceso.
+  </div>
+} @else {
+  <div class="aviso aviso--exito">
+    Sesion iniciada como <strong>{{ keycloak.usuario() }}</strong>.
+    Tus permisos se calcularon a partir de los grupos y roles del realm.
+  </div>
+}
+
+<h2>Nuestras secciones</h2>
+@if (cargando()) {
+  <p class="cargando">Cargando catalogos...</p>
+} @else {
+  <div class="rejilla">
+    @for (c of catalogos(); track c.id) {
+      <div class="tarjeta">
+        <h3 style="margin:0 0 .35rem;font-size:1rem">{{ c.nombre }}</h3>
+        <p style="margin:0;color:var(--texto-suave);font-size:.875rem">{{ c.descripcion }}</p>
+      </div>
+    }
+  </div>
+}
+
+<h2>Como esta protegida esta aplicacion</h2>
+<div class="rejilla">
+  <div class="tarjeta">
+    <h3 style="margin:0 0 .4rem;font-size:.95rem">Acceso publico</h3>
+    <p style="margin:0;font-size:.875rem;color:var(--texto-suave)">
+      Inicio y catalogo. No exigen token: el filtro de seguridad los declara abiertos.
+    </p>
+    <p style="margin:.5rem 0 0"><a routerLink="/catalogo">Ver el catalogo</a></p>
+  </div>
+  <div class="tarjeta">
+    <h3 style="margin:0 0 .4rem;font-size:.95rem">Acceso privado</h3>
+    <p style="margin:0;font-size:.875rem;color:var(--texto-suave)">
+      Mis pedidos y mi perfil. Exigen un token valido emitido por Keycloak.
+    </p>
+  </div>
+  <div class="tarjeta">
+    <h3 style="margin:0 0 .4rem;font-size:.95rem">Acceso especial</h3>
+    <p style="margin:0;font-size:.875rem;color:var(--texto-suave)">
+      Reportes y administracion. Exigen roles concretos, y ciertas operaciones
+      pasan ademas por las politicas de autorizacion de Keycloak.
+    </p>
+  </div>
+</div>

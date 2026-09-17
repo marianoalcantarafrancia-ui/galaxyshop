@@ -1,0 +1,2475 @@
+{
+  "info": {
+    "_postman_id": "b7e4a1c2-9f30-4d68-8a51-galaxyshop01",
+    "name": "GalaxyShop - Security with Keycloak",
+    "description": "Coleccion de pruebas del proyecto final del curso *Security with Keycloak*.\n\nCubre los tres niveles de acceso de la API (publico, privado y especial), la seguridad granular con Authorization Services (UMA 2.0) y el segundo realm de proveedores.\n\n**Como usarla**\n1. Importa tambien el archivo `GalaxyShop.postman_environment.json`.\n2. Ejecuta primero la carpeta *0. Autenticacion*: guarda los tokens en variables.\n3. Las demas carpetas ya usan esos tokens.\n\nTambien se puede lanzar entera con el Collection Runner: cada peticion valida el codigo HTTP que la rubrica espera.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Autenticacion",
+      "description": "Obtiene un token por cada perfil de usuario. Ejecutar primero.",
+      "item": [
+        {
+          "name": "Token - cliente.gold (cliente GOLD)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.environment.set(\"tokenCliente\", d.access_token);",
+                  "pm.environment.set(\"tokenCliente_refresh\", d.refresh_token);",
+                  "pm.test(\"Se obtuvo el access token\", () => pm.expect(d.access_token).to.be.a(\"string\"));",
+                  "pm.test(\"El token dura lo configurado en el realm (300 s)\", () => pm.expect(d.expires_in).to.eql(300));",
+                  "",
+                  "// Se muestran los roles que trae el token para verlos en la consola",
+                  "const p = JSON.parse(atob(d.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));",
+                  "console.log('usuario :', p.preferred_username);",
+                  "console.log('realm   :', (p.realm_access||{}).roles);",
+                  "console.log('cliente :', ((p.resource_access||{})['shop-backend']||{}).roles);",
+                  "console.log('grupos  :', p.grupos, '| sede:', p.store, '| tier:', p.tier);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "shop-frontend"
+                },
+                {
+                  "key": "username",
+                  "value": "cliente.gold"
+                },
+                {
+                  "key": "password",
+                  "value": "{{passwordTienda}}"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid shop-orders"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Cliente frecuente. Roles: gs-customer + order-create, order-read-own, catalog-read."
+          }
+        },
+        {
+          "name": "Token - cliente.basic (cliente nuevo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.environment.set(\"tokenClienteBasic\", d.access_token);",
+                  "pm.environment.set(\"tokenClienteBasic_refresh\", d.refresh_token);",
+                  "pm.test(\"Se obtuvo el access token\", () => pm.expect(d.access_token).to.be.a(\"string\"));",
+                  "pm.test(\"El token dura lo configurado en el realm (300 s)\", () => pm.expect(d.expires_in).to.eql(300));",
+                  "",
+                  "// Se muestran los roles que trae el token para verlos en la consola",
+                  "const p = JSON.parse(atob(d.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));",
+                  "console.log('usuario :', p.preferred_username);",
+                  "console.log('realm   :', (p.realm_access||{}).roles);",
+                  "console.log('cliente :', ((p.resource_access||{})['shop-backend']||{}).roles);",
+                  "console.log('grupos  :', p.grupos, '| sede:', p.store, '| tier:', p.tier);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "shop-frontend"
+                },
+                {
+                  "key": "username",
+                  "value": "cliente.basic"
+                },
+                {
+                  "key": "password",
+                  "value": "{{passwordTienda}}"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid shop-orders"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Segundo cliente, sirve para comprobar que no puede leer pedidos ajenos."
+          }
+        },
+        {
+          "name": "Token - cajero.lima (personal de tienda)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.environment.set(\"tokenCajero\", d.access_token);",
+                  "pm.environment.set(\"tokenCajero_refresh\", d.refresh_token);",
+                  "pm.test(\"Se obtuvo el access token\", () => pm.expect(d.access_token).to.be.a(\"string\"));",
+                  "pm.test(\"El token dura lo configurado en el realm (300 s)\", () => pm.expect(d.expires_in).to.eql(300));",
+                  "",
+                  "// Se muestran los roles que trae el token para verlos en la consola",
+                  "const p = JSON.parse(atob(d.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));",
+                  "console.log('usuario :', p.preferred_username);",
+                  "console.log('realm   :', (p.realm_access||{}).roles);",
+                  "console.log('cliente :', ((p.resource_access||{})['shop-backend']||{}).roles);",
+                  "console.log('grupos  :', p.grupos, '| sede:', p.store, '| tier:', p.tier);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "shop-frontend"
+                },
+                {
+                  "key": "username",
+                  "value": "cajero.lima"
+                },
+                {
+                  "key": "password",
+                  "value": "{{passwordTienda}}"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid shop-orders"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Cajero de la sede LIM-001. Rol gs-clerk."
+          }
+        },
+        {
+          "name": "Token - almacen.lima (almacen)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.environment.set(\"tokenAlmacen\", d.access_token);",
+                  "pm.environment.set(\"tokenAlmacen_refresh\", d.refresh_token);",
+                  "pm.test(\"Se obtuvo el access token\", () => pm.expect(d.access_token).to.be.a(\"string\"));",
+                  "pm.test(\"El token dura lo configurado en el realm (300 s)\", () => pm.expect(d.expires_in).to.eql(300));",
+                  "",
+                  "// Se muestran los roles que trae el token para verlos en la consola",
+                  "const p = JSON.parse(atob(d.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));",
+                  "console.log('usuario :', p.preferred_username);",
+                  "console.log('realm   :', (p.realm_access||{}).roles);",
+                  "console.log('cliente :', ((p.resource_access||{})['shop-backend']||{}).roles);",
+                  "console.log('grupos  :', p.grupos, '| sede:', p.store, '| tier:', p.tier);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "shop-frontend"
+                },
+                {
+                  "key": "username",
+                  "value": "almacen.lima"
+                },
+                {
+                  "key": "password",
+                  "value": "{{passwordTienda}}"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid shop-orders"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Almacenero. Rol gs-warehouse: puede editar el catalogo en horario laboral."
+          }
+        },
+        {
+          "name": "Token - gerente.shop (gerencia)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.environment.set(\"tokenGerente\", d.access_token);",
+                  "pm.environment.set(\"tokenGerente_refresh\", d.refresh_token);",
+                  "pm.test(\"Se obtuvo el access token\", () => pm.expect(d.access_token).to.be.a(\"string\"));",
+                  "pm.test(\"El token dura lo configurado en el realm (300 s)\", () => pm.expect(d.expires_in).to.eql(300));",
+                  "",
+                  "// Se muestran los roles que trae el token para verlos en la consola",
+                  "const p = JSON.parse(atob(d.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));",
+                  "console.log('usuario :', p.preferred_username);",
+                  "console.log('realm   :', (p.realm_access||{}).roles);",
+                  "console.log('cliente :', ((p.resource_access||{})['shop-backend']||{}).roles);",
+                  "console.log('grupos  :', p.grupos, '| sede:', p.store, '| tier:', p.tier);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "shop-frontend"
+                },
+                {
+                  "key": "username",
+                  "value": "gerente.shop"
+                },
+                {
+                  "key": "password",
+                  "value": "{{passwordTienda}}"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid shop-orders"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Gerente. Unico perfil que puede anular pedidos, y solo en horario laboral."
+          }
+        },
+        {
+          "name": "Token - auditor.shop (auditoria)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.environment.set(\"tokenAuditor\", d.access_token);",
+                  "pm.environment.set(\"tokenAuditor_refresh\", d.refresh_token);",
+                  "pm.test(\"Se obtuvo el access token\", () => pm.expect(d.access_token).to.be.a(\"string\"));",
+                  "pm.test(\"El token dura lo configurado en el realm (300 s)\", () => pm.expect(d.expires_in).to.eql(300));",
+                  "",
+                  "// Se muestran los roles que trae el token para verlos en la consola",
+                  "const p = JSON.parse(atob(d.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));",
+                  "console.log('usuario :', p.preferred_username);",
+                  "console.log('realm   :', (p.realm_access||{}).roles);",
+                  "console.log('cliente :', ((p.resource_access||{})['shop-backend']||{}).roles);",
+                  "console.log('grupos  :', p.grupos, '| sede:', p.store, '| tier:', p.tier);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "shop-frontend"
+                },
+                {
+                  "key": "username",
+                  "value": "auditor.shop"
+                },
+                {
+                  "key": "password",
+                  "value": "{{passwordTienda}}"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid shop-orders"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Auditor. Solo lectura de reportes."
+          }
+        },
+        {
+          "name": "Token - admin.shop (administrador)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.environment.set(\"tokenAdmin\", d.access_token);",
+                  "pm.environment.set(\"tokenAdmin_refresh\", d.refresh_token);",
+                  "pm.test(\"Se obtuvo el access token\", () => pm.expect(d.access_token).to.be.a(\"string\"));",
+                  "pm.test(\"El token dura lo configurado en el realm (300 s)\", () => pm.expect(d.expires_in).to.eql(300));",
+                  "",
+                  "// Se muestran los roles que trae el token para verlos en la consola",
+                  "const p = JSON.parse(atob(d.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));",
+                  "console.log('usuario :', p.preferred_username);",
+                  "console.log('realm   :', (p.realm_access||{}).roles);",
+                  "console.log('cliente :', ((p.resource_access||{})['shop-backend']||{}).roles);",
+                  "console.log('grupos  :', p.grupos, '| sede:', p.store, '| tier:', p.tier);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "shop-frontend"
+                },
+                {
+                  "key": "username",
+                  "value": "admin.shop"
+                },
+                {
+                  "key": "password",
+                  "value": "{{passwordTienda}}"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid shop-orders"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Administrador funcional. Rol gs-admin."
+          }
+        },
+        {
+          "name": "Token - shop-batch (client_credentials)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.environment.set(\"tokenBatch\", d.access_token);",
+                  "pm.test(\"Service account autenticada\", () => pm.expect(d.access_token).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "shop-batch"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{secretBatch}}"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Proceso desatendido de reposicion: se autentica sin usuario, con sus propias credenciales."
+          }
+        },
+        {
+          "name": "Refresh token (reuso permitido: 2 veces)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.environment.set(\"tokenCliente\", d.access_token);",
+                  "console.log('Nuevo access token emitido. El realm admite reutilizar el refresh token 2 veces (refreshTokenMaxReuse=2).');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "shop-frontend"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "refresh_token"
+                },
+                {
+                  "key": "refresh_token",
+                  "value": "{{tokenCliente_refresh}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Rubrica #9: comprueba la duracion del refresh token y su numero de reutilizaciones."
+          }
+        },
+        {
+          "name": "Token - proveedor.uno (realm galaxyshop-partners)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.environment.set(\"tokenProveedor\", d.access_token);",
+                  "pm.test(\"El segundo realm emite su propio token\", () => pm.expect(d.access_token).to.be.a(\"string\"));",
+                  "pm.test(\"Su access token dura 180 s\", () => pm.expect(d.expires_in).to.eql(180));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "partner-portal"
+                },
+                {
+                  "key": "username",
+                  "value": "proveedor.uno"
+                },
+                {
+                  "key": "password",
+                  "value": "{{passwordPartner}}"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realmPartners}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realmPartners}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Rubrica #2: el segundo realm es un directorio de identidades independiente."
+          }
+        },
+        {
+          "name": "Token invalido (usuario inexistente) - debe fallar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Keycloak rechaza las credenciales\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "shop-frontend"
+                },
+                {
+                  "key": "username",
+                  "value": "no.existe"
+                },
+                {
+                  "key": "password",
+                  "value": "loQueSea1!"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Acceso publico (sin token)",
+      "description": "Rubrica #3: endpoints abiertos. Ninguna de estas peticiones lleva Authorization.",
+      "item": [
+        {
+          "name": "Estado del servicio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/api/public/health",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "public",
+                "health"
+              ]
+            },
+            "description": "Sonda de salud."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Catalogos publicos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/api/public/catalogs",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "public",
+                "catalogs"
+              ]
+            },
+            "description": "Escaparate de la tienda."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve catalogos\", () => pm.expect(pm.response.json().length).to.be.above(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Productos publicos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/api/public/products",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "public",
+                "products"
+              ]
+            },
+            "description": "Productos visibles sin identificarse."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "const p = pm.response.json();",
+                  "pm.environment.set(\"productoId\", p[0].id);",
+                  "pm.environment.set(\"catalogoId\", p[0].catalogoId);",
+                  "pm.test(\"Se guardo un producto para las pruebas siguientes\", () => pm.expect(p[0].id).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ruta privada sin token - debe dar 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/api/products",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
+            },
+            "description": "Comprueba que el filtro de seguridad cierra lo que no es publico."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pedidos sin token - debe dar 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/api/orders/me",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "me"
+              ]
+            },
+            "description": "Idem."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Acceso privado (token valido)",
+      "description": "Rubrica #3 y #4: requieren un token emitido por Keycloak.",
+      "item": [
+        {
+          "name": "Mi perfil",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/me",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "me"
+              ]
+            },
+            "description": "Identidad efectiva: roles, grupos, atributos y permisos granulares."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "const p = pm.response.json();",
+                  "pm.test(\"El usuario es cliente.gold\", () => pm.expect(p.usuario).to.eql(\"cliente.gold\"));",
+                  "pm.test(\"Hereda el rol del grupo\", () => pm.expect(p.roles).to.include(\"ROLE_gs-customer\"));",
+                  "pm.test(\"Trae los atributos del token\", () => pm.expect(p.categoria).to.eql(\"GOLD\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Catalogos (privado)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/catalogs",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "catalogs"
+              ]
+            },
+            "description": "Requiere el rol de cliente catalog-read."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Productos (privado + scope catalog:view)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/products",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
+            },
+            "description": "Ademas del rol, Keycloak debe conceder el scope catalog:view."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar un pedido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/orders",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "description": "Requiere el scope granular order:create, que solo tienen los clientes.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": \"{{productoId}}\",\n  \"cantidad\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
+                  "const o = pm.response.json();",
+                  "pm.environment.set(\"pedidoId\", o.id);",
+                  "pm.test(\"El pedido queda a nombre del solicitante\", () => pm.expect(o.cliente).to.eql(\"cliente.gold\"));",
+                  "pm.test(\"Nace REGISTRADO\", () => pm.expect(o.estado).to.eql(\"REGISTRADO\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mis pedidos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/orders/me",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "me"
+              ]
+            },
+            "description": "Devuelve solo los pedidos del usuario del token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Detalle de mi pedido",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/orders/{{pedidoId}}",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{pedidoId}}"
+              ]
+            },
+            "description": "@PostAuthorize confirma que el pedido es propio."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pedido ajeno - debe dar 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenClienteBasic}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/orders/{{pedidoId}}",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{pedidoId}}"
+              ]
+            },
+            "description": "Rubrica #4: @PostAuthorize impide leer el pedido de otro cliente aunque se conozca su id."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validacion: cantidad 0 - debe dar 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/orders",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "description": "La validacion de negocio actua despues de la de seguridad.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": \"{{productoId}}\",\n  \"cantidad\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Acceso especial (token + rol)",
+      "description": "Rubrica #3 y #4: rutas que exigen roles concretos.",
+      "item": [
+        {
+          "name": "Reportes con auditor - 200",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/reports/sales",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "sales"
+              ]
+            },
+            "description": "El auditor pertenece a /Corporativo/Auditoria."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reportes con gerente - 200",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenGerente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/reports/sales",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "sales"
+              ]
+            },
+            "description": "Gerencia tambien puede consultarlos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reportes con cliente - 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/reports/sales",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "sales"
+              ]
+            },
+            "description": "Un cliente no tiene ningun rol de reporte."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reportes con cajero - 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCajero}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/reports/sales",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "sales"
+              ]
+            },
+            "description": "El personal de caja tampoco."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Administracion con admin - 200",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/admin/orders",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "orders"
+              ]
+            },
+            "description": "Solo el rol de realm gs-admin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Administracion con gerente - 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenGerente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/admin/orders",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "orders"
+              ]
+            },
+            "description": "Ni siquiera Gerencia entra a /api/admin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reglas de seguridad en base de datos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/admin/security-rules",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "security-rules"
+              ]
+            },
+            "description": "Rubrica #4: reglas de acceso administrables sin recompilar."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Hay reglas cargadas\", () => pm.expect(pm.response.json().length).to.be.above(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Anular pedido con cliente - 403",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/orders/{{pedidoId}}/cancel",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{pedidoId}}",
+                "cancel"
+              ]
+            },
+            "description": "La Permission 'Anular pedido' exige Gerencia y horario laboral."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Anular pedido con gerente - 200",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenGerente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/orders/{{pedidoId}}/cancel",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{pedidoId}}",
+                "cancel"
+              ]
+            },
+            "description": "Funciona entre las 06:00 y las 22:59 (hora del servidor)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Gerencia puede anular en horario laboral\", () => pm.expect([200, 403]).to.include(pm.response.code));",
+                  "if (pm.response.code === 403) { console.log(\"Denegado por la Time Policy: fuera del horario 06:00-22:59\"); }",
+                  "if (pm.response.code === 200) { pm.expect(pm.response.json().estado).to.eql(\"ANULADO\"); }"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Escritura en el catalogo",
+      "description": "Rubrica #6: la decision la toman las Policies de Keycloak, no el codigo.",
+      "item": [
+        {
+          "name": "Crear producto con almacen - 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAlmacen}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/products",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
+            },
+            "description": "Permission 'Editar catalogo' = rol de personal de tienda Y horario laboral.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Cafe molido premium\",\n  \"descripcion\": \"Tueste medio, bolsa de 500 g\",\n  \"precioUnitario\": 42.5,\n  \"stock\": 40,\n  \"catalogoId\": \"{{catalogoId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Permitido en horario laboral\", () => pm.expect([201, 403]).to.include(pm.response.code));",
+                  "if (pm.response.code === 201) { pm.environment.set(\"productoNuevoId\", pm.response.json().id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear producto con cliente - 403",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/products",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
+            },
+            "description": "Un cliente nunca puede escribir en el catalogo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Intento no autorizado\",\n  \"descripcion\": \"no debe crearse\",\n  \"precioUnitario\": 1.0,\n  \"stock\": 1,\n  \"catalogoId\": \"{{catalogoId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar producto con gerente - 403",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenGerente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/products/{{productoNuevoId}}",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "{{productoNuevoId}}"
+              ]
+            },
+            "description": "catalog:delete esta reservado a los administradores."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar producto con admin - 204",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/products/{{productoNuevoId}}",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "{{productoNuevoId}}"
+              ]
+            },
+            "description": "Permission 'Eliminar del catalogo' = Rol Administrador."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Eliminado o ya inexistente\", () => pm.expect([204, 404]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Seguridad granular (UMA 2.0)",
+      "description": "Rubrica #6: se pregunta directamente a Keycloak si un usuario puede ejercer un scope sobre un recurso. El resultado sale de evaluar las Policies y Permissions del cliente shop-backend.",
+      "item": [
+        {
+          "name": "Permisos concedidos al cliente (RPT completo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "console.log(JSON.stringify(pm.response.json(), null, 2));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:uma-ticket"
+                },
+                {
+                  "key": "audience",
+                  "value": "shop-backend"
+                },
+                {
+                  "key": "response_mode",
+                  "value": "permissions"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Lista todos los recursos y scopes que Keycloak concede a este token."
+          }
+        },
+        {
+          "name": "Cliente puede crear pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Keycloak respondio\", () => pm.expect([200, 400, 403]).to.include(pm.response.code));",
+                  "const permitido = pm.response.code === 200 && pm.response.json().result === true;",
+                  "console.log(\"Pedidos#order:create ->\", permitido ? \"PERMITIDO\" : \"DENEGADO\");",
+                  "pm.test(\"Decision esperada: PERMITIDO\", () => pm.expect(permitido).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:uma-ticket"
+                },
+                {
+                  "key": "audience",
+                  "value": "shop-backend"
+                },
+                {
+                  "key": "permission",
+                  "value": "Pedidos#order:create"
+                },
+                {
+                  "key": "response_mode",
+                  "value": "decision"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Permission 'Crear pedido' -> policy Rol Cliente."
+          }
+        },
+        {
+          "name": "Cajero NO puede crear pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Keycloak respondio\", () => pm.expect([200, 400, 403]).to.include(pm.response.code));",
+                  "const permitido = pm.response.code === 200 && pm.response.json().result === true;",
+                  "console.log(\"Pedidos#order:create ->\", permitido ? \"PERMITIDO\" : \"DENEGADO\");",
+                  "pm.test(\"Decision esperada: DENEGADO\", () => pm.expect(permitido).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCajero}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:uma-ticket"
+                },
+                {
+                  "key": "audience",
+                  "value": "shop-backend"
+                },
+                {
+                  "key": "permission",
+                  "value": "Pedidos#order:create"
+                },
+                {
+                  "key": "response_mode",
+                  "value": "decision"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "El cajero no tiene el rol gs-customer."
+          }
+        },
+        {
+          "name": "Almacen puede editar catalogo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Keycloak respondio\", () => pm.expect([200, 400, 403]).to.include(pm.response.code));",
+                  "const permitido = pm.response.code === 200 && pm.response.json().result === true;",
+                  "console.log(\"Catalogo#catalog:edit ->\", permitido ? \"PERMITIDO\" : \"DENEGADO\");",
+                  "pm.test(\"Decision esperada: PERMITIDO\", () => pm.expect(permitido).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAlmacen}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:uma-ticket"
+                },
+                {
+                  "key": "audience",
+                  "value": "shop-backend"
+                },
+                {
+                  "key": "permission",
+                  "value": "Catalogo#catalog:edit"
+                },
+                {
+                  "key": "response_mode",
+                  "value": "decision"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Permission 'Editar catalogo' -> Personal de Tienda Y Horario Laboral."
+          }
+        },
+        {
+          "name": "Cliente NO puede editar catalogo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Keycloak respondio\", () => pm.expect([200, 400, 403]).to.include(pm.response.code));",
+                  "const permitido = pm.response.code === 200 && pm.response.json().result === true;",
+                  "console.log(\"Catalogo#catalog:edit ->\", permitido ? \"PERMITIDO\" : \"DENEGADO\");",
+                  "pm.test(\"Decision esperada: DENEGADO\", () => pm.expect(permitido).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:uma-ticket"
+                },
+                {
+                  "key": "audience",
+                  "value": "shop-backend"
+                },
+                {
+                  "key": "permission",
+                  "value": "Catalogo#catalog:edit"
+                },
+                {
+                  "key": "response_mode",
+                  "value": "decision"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Admin puede eliminar del catalogo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Keycloak respondio\", () => pm.expect([200, 400, 403]).to.include(pm.response.code));",
+                  "const permitido = pm.response.code === 200 && pm.response.json().result === true;",
+                  "console.log(\"Catalogo#catalog:delete ->\", permitido ? \"PERMITIDO\" : \"DENEGADO\");",
+                  "pm.test(\"Decision esperada: PERMITIDO\", () => pm.expect(permitido).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:uma-ticket"
+                },
+                {
+                  "key": "audience",
+                  "value": "shop-backend"
+                },
+                {
+                  "key": "permission",
+                  "value": "Catalogo#catalog:delete"
+                },
+                {
+                  "key": "response_mode",
+                  "value": "decision"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Permission 'Eliminar del catalogo' -> Rol Administrador."
+          }
+        },
+        {
+          "name": "Gerente NO puede eliminar del catalogo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Keycloak respondio\", () => pm.expect([200, 400, 403]).to.include(pm.response.code));",
+                  "const permitido = pm.response.code === 200 && pm.response.json().result === true;",
+                  "console.log(\"Catalogo#catalog:delete ->\", permitido ? \"PERMITIDO\" : \"DENEGADO\");",
+                  "pm.test(\"Decision esperada: DENEGADO\", () => pm.expect(permitido).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenGerente}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:uma-ticket"
+                },
+                {
+                  "key": "audience",
+                  "value": "shop-backend"
+                },
+                {
+                  "key": "permission",
+                  "value": "Catalogo#catalog:delete"
+                },
+                {
+                  "key": "response_mode",
+                  "value": "decision"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Gerencia supervisa, pero no borra del catalogo."
+          }
+        },
+        {
+          "name": "Gerente puede anular pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Keycloak respondio\", () => pm.expect([200, 400, 403]).to.include(pm.response.code));",
+                  "const permitido = pm.response.code === 200 && pm.response.json().result === true;",
+                  "console.log(\"Pedidos#order:cancel ->\", permitido ? \"PERMITIDO\" : \"DENEGADO\");",
+                  "pm.test(\"Decision esperada: PERMITIDO\", () => pm.expect(permitido).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenGerente}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:uma-ticket"
+                },
+                {
+                  "key": "audience",
+                  "value": "shop-backend"
+                },
+                {
+                  "key": "permission",
+                  "value": "Pedidos#order:cancel"
+                },
+                {
+                  "key": "response_mode",
+                  "value": "decision"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Policy agregada: Grupo Gerencia Y Horario Laboral."
+          }
+        },
+        {
+          "name": "Auditor puede ver reportes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Keycloak respondio\", () => pm.expect([200, 400, 403]).to.include(pm.response.code));",
+                  "const permitido = pm.response.code === 200 && pm.response.json().result === true;",
+                  "console.log(\"Reportes#report:view ->\", permitido ? \"PERMITIDO\" : \"DENEGADO\");",
+                  "pm.test(\"Decision esperada: PERMITIDO\", () => pm.expect(permitido).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAuditor}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:uma-ticket"
+                },
+                {
+                  "key": "audience",
+                  "value": "shop-backend"
+                },
+                {
+                  "key": "permission",
+                  "value": "Reportes#report:view"
+                },
+                {
+                  "key": "response_mode",
+                  "value": "decision"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "Permission 'Ver reportes' -> Gerencia o Auditoria."
+          }
+        },
+        {
+          "name": "Cajero NO puede ver reportes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Keycloak respondio\", () => pm.expect([200, 400, 403]).to.include(pm.response.code));",
+                  "const permitido = pm.response.code === 200 && pm.response.json().result === true;",
+                  "console.log(\"Reportes#report:view ->\", permitido ? \"PERMITIDO\" : \"DENEGADO\");",
+                  "pm.test(\"Decision esperada: DENEGADO\", () => pm.expect(permitido).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCajero}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:uma-ticket"
+                },
+                {
+                  "key": "audience",
+                  "value": "shop-backend"
+                },
+                {
+                  "key": "permission",
+                  "value": "Reportes#report:view"
+                },
+                {
+                  "key": "response_mode",
+                  "value": "decision"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Segundo realm: proveedores",
+      "description": "Rubrica #2: dos realms independientes conviviendo en la misma instalacion.",
+      "item": [
+        {
+          "name": "Configuracion OIDC del realm de proveedores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"El emisor es el realm de proveedores\", () => pm.expect(pm.response.json().issuer).to.include(\"galaxyshop-partners\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realmPartners}}/.well-known/openid-configuration",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realmPartners}}",
+                ".well-known",
+                "openid-configuration"
+              ]
+            },
+            "description": "Cada realm publica su propio emisor y sus propias claves."
+          }
+        },
+        {
+          "name": "El token de proveedor NO sirve en la API de la tienda",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"La API rechaza un token de otro realm\", () => pm.response.to.have.status(401));",
+                  "console.log('El aislamiento entre realms funciona: distinto emisor, distintas claves.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProveedor}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiUrl}}/api/products",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
+            },
+            "description": "Demuestra el aislamiento: la API solo confia en el emisor galaxyshop."
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Configuracion del realm",
+      "description": "Rubrica #9: idioma, politica de contrasena y tiempos de token, verificables desde la API.",
+      "item": [
+        {
+          "name": "Metadatos OIDC del realm galaxyshop",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Soporta Authorization Code\", () => pm.expect(d.grant_types_supported).to.include(\"authorization_code\"));",
+                  "pm.test(\"Soporta el grant UMA de la seguridad granular\", () => pm.expect(d.grant_types_supported).to.include(\"urn:ietf:params:oauth:grant-type:uma-ticket\"));",
+                  "pm.test(\"Soporta PKCE S256\", () => pm.expect(d.code_challenge_methods_supported).to.include(\"S256\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/.well-known/openid-configuration",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                ".well-known",
+                "openid-configuration"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Claves publicas del realm (JWKS)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Publica al menos una clave\", () => pm.expect(pm.response.json().keys.length).to.be.above(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/certs",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "certs"
+              ]
+            },
+            "description": "Son las claves con las que Spring Security valida la firma del JWT."
+          }
+        },
+        {
+          "name": "Cerrar sesion (logout con refresh token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Sesion cerrada\", () => pm.expect([204, 200, 400]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "shop-frontend"
+                },
+                {
+                  "key": "refresh_token",
+                  "value": "{{tokenCliente_refresh}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/logout",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "logout"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

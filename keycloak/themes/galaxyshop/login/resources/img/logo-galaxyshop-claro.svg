@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 120" width="380" height="120" role="img" aria-label="GalaxyShop">
+  <defs>
+    <linearGradient id="gsOrbita" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Simbolo: un carrito orbitado, guino al nombre "Galaxy" -->
+  <g transform="translate(14 18)">
+    <ellipse cx="42" cy="42" rx="40" ry="17" fill="none"
+             stroke="url(#gsOrbita)" stroke-width="4"
+             transform="rotate(-24 42 42)"/>
+    <circle cx="42" cy="42" r="23" fill="#1d4ed8"/>
+    <!-- carrito -->
+    <g stroke="#ffffff" stroke-width="2.6" fill="none"
+       stroke-linecap="round" stroke-linejoin="round">
+      <path d="M31 33h4l3.2 13.5h13.6L55 37H37"/>
+      <circle cx="40" cy="52.5" r="2.4" fill="#ffffff" stroke="none"/>
+      <circle cx="50" cy="52.5" r="2.4" fill="#ffffff" stroke="none"/>
+    </g>
+    <circle cx="76" cy="22" r="3.4" fill="#f59e0b"/>
+  </g>
+
+  <!-- Nombre -->
+  <text x="118" y="58" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="40" font-weight="400" fill="#f8fafc">Galaxy</text>
+  <text x="243" y="58" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="40" font-weight="700" fill="#93c5fd">Shop</text>
+  <text x="120" y="80" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="12.5" letter-spacing="3.4" fill="#cbd5e1">TIENDA DE COMESTIBLES</text>
+</svg>

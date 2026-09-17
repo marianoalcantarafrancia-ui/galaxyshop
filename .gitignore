@@ -1,0 +1,25 @@
+# Entorno local
+.env
+
+# Java / Maven
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log*
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Exportaciones temporales de Keycloak
+keycloak/realms/*.tmp.json

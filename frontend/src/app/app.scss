@@ -1,0 +1,99 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1.5rem;
+  height: 4rem;
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: 1.15rem;
+  text-decoration: none;
+  color: var(--texto);
+  white-space: nowrap;
+
+  &__icono { font-size: 1.4rem; }
+  &__texto strong { color: var(--primario); }
+}
+
+.menu {
+  display: flex;
+  gap: .25rem;
+  flex: 1;
+  overflow-x: auto;
+
+  a {
+    padding: .5rem .85rem;
+    border-radius: .5rem;
+    text-decoration: none;
+    color: var(--texto-suave);
+    font-size: .925rem;
+    white-space: nowrap;
+    transition: background .15s, color .15s;
+
+    &:hover { background: var(--fondo-sutil); color: var(--texto); }
+    &.activo { background: var(--primario-suave); color: var(--primario); font-weight: 600; }
+  }
+}
+
+.sesion {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+
+  &__usuario {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin-right: .5rem;
+  }
+
+  &__nombre { font-size: .9rem; font-weight: 600; }
+}
+
+.etiqueta {
+  font-size: .7rem;
+  padding: .15rem .45rem;
+  border-radius: 1rem;
+  background: var(--fondo-sutil);
+  color: var(--texto-suave);
+  border: 1px solid var(--borde);
+
+  &--tier { background: var(--primario-suave); color: var(--primario); border-color: transparent; }
+}
+
+.contenido {
+  flex: 1;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+.pie {
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  font-size: .8rem;
+  color: var(--texto-suave);
+  border-top: 1px solid var(--borde);
+}
+
+@media (max-width: 860px) {
+  .cabecera { height: auto; flex-wrap: wrap; padding: .75rem 1rem; }
+  .menu { order: 3; width: 100%; }
+  .sesion__usuario { display: none; }
+}

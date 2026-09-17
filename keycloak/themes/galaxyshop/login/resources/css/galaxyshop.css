@@ -1,0 +1,163 @@
+/* ==========================================================================
+   GalaxyShop - identidad visual de la pantalla de acceso
+   Rubrica #8: colores, logo e imagenes propios de la empresa.
+
+   Se aplica SOBRE el tema keycloak.v2 (PatternFly 5) redefiniendo solo lo
+   necesario. PatternFly ya resuelve el modo claro y el oscuro: este archivo
+   respeta ambos y se limita a aportar la marca.
+   ========================================================================== */
+
+:root {
+  --gs-primario: #1d4ed8;
+  --gs-primario-oscuro: #1e40af;
+  --gs-primario-claro: #60a5fa;
+  --gs-acento: #f59e0b;
+  --gs-borde-foco: rgba(29, 78, 216, .25);
+}
+
+/* En modo oscuro la marca necesita un azul mas luminoso para mantener contraste */
+.pf-v5-theme-dark {
+  --gs-primario: #60a5fa;
+  --gs-primario-oscuro: #3b82f6;
+  --gs-borde-foco: rgba(96, 165, 250, .3);
+}
+
+/* --- Fondo: degradado corporativo -------------------------------------- */
+body {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #1d4ed8 100%) !important;
+  background-attachment: fixed !important;
+}
+
+.pf-v5-c-background-image,
+.pf-v5-c-background-image::before { display: none !important; }
+
+/* --- Cabecera: se reemplaza el texto por el logo de la empresa ---------- */
+#kc-header-wrapper {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  padding: 0 !important;
+  margin-bottom: .5rem;
+}
+
+#kc-header-wrapper::before {
+  content: "";
+  display: block;
+  width: 240px;
+  height: 78px;
+  margin: 0 auto;
+  background: url("../img/logo-galaxyshop-claro.svg") center / contain no-repeat;
+}
+
+.pf-v5-c-login__header { justify-content: center; }
+
+/* --- Tarjeta central ---------------------------------------------------- */
+.pf-v5-c-login__main {
+  border-radius: 1rem !important;
+  border: none !important;
+  box-shadow: 0 20px 45px rgba(2, 6, 23, .35) !important;
+}
+
+/* --- Titulo: solo se ajusta el tamano; el color lo pone PatternFly ------ */
+#kc-page-title {
+  font-size: 1.3rem !important;
+  font-weight: 600 !important;
+  text-align: center;
+}
+
+/* Lema de la tienda bajo el titulo */
+#kc-page-title::after {
+  content: "Tu tienda de comestibles de confianza";
+  display: block;
+  font-size: .85rem;
+  font-weight: 400;
+  opacity: .7;
+  margin-top: .35rem;
+}
+
+/* --- Campos del formulario ---------------------------------------------- */
+.pf-v5-c-form-control {
+  border-radius: .55rem !important;
+  transition: box-shadow .15s, border-color .15s;
+}
+
+.pf-v5-c-form-control:focus-within,
+.pf-v5-c-form-control:has(input:focus) {
+  box-shadow: 0 0 0 3px var(--gs-borde-foco) !important;
+}
+
+/* --- Boton principal ----------------------------------------------------- */
+.pf-v5-c-button.pf-m-primary {
+  background: var(--gs-primario) !important;
+  border-radius: .55rem !important;
+  font-weight: 600 !important;
+  transition: background .15s;
+}
+
+.pf-v5-c-button.pf-m-primary:hover {
+  background: var(--gs-primario-oscuro) !important;
+}
+
+/* --- Enlaces -------------------------------------------------------------- */
+a, .pf-v5-c-button.pf-m-link { color: var(--gs-primario) !important; }
+a:hover { color: var(--gs-primario-oscuro) !important; }
+
+/* --- Proveedores sociales (GitHub / Google) ------------------------------ */
+#kc-social-providers h2 {
+  font-size: .78rem !important;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  opacity: .65;
+  text-align: center;
+}
+
+#kc-social-providers ul {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: 0;
+  margin: .5rem 0 0;
+  list-style: none;
+}
+
+#kc-social-providers a {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  border-radius: .55rem !important;
+  font-weight: 500 !important;
+  padding: .55rem .9rem !important;
+  transition: border-color .15s, background .15s;
+}
+
+/* Los iconos llegan como SVG sin dimensiones y PatternFly los deja crecer:
+   se acotan a tamano de icono. */
+#kc-social-providers a svg,
+#kc-social-providers a img,
+#kc-social-providers .pf-v5-c-login__main-footer-links-item svg {
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+  flex: 0 0 auto;
+}
+
+#kc-social-providers a:hover { border-color: var(--gs-primario) !important; }
+
+/* --- Ayuda de la politica de contrasena ---------------------------------- */
+#password-policy-hint, .pf-v5-c-helper-text {
+  font-size: .8rem !important;
+  line-height: 1.45;
+  opacity: .8;
+}
+
+/* --- Selector de idioma --------------------------------------------------- */
+#kc-locale { position: absolute; top: 1rem; right: 1.25rem; }
+
+/* --- Pie de pagina -------------------------------------------------------- */
+.pf-v5-c-login__footer::after {
+  content: "GalaxyShop  ·  Acceso protegido con Keycloak";
+  display: block;
+  text-align: center;
+  color: rgba(226, 232, 240, .75);
+  font-size: .78rem;
+  margin-top: 1.5rem;
+}

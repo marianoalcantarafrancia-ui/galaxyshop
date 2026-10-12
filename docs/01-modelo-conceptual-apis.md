@@ -5,7 +5,7 @@
 **GalaxyShop** es una cadena de tiendas de comestibles con venta en línea. El
 dominio (catálogos, productos y pedidos) está tomado del proyecto de ejemplo
 público [`jannie-louwrens/spring-boot-keycloak-angular`](https://github.com/jannie-louwrens/spring-boot-keycloak-angular),
-actualizado aquí a Spring Boot 3 + Keycloak 26.
+actualizado aquí a Spring Boot 4 + Java 25 + Keycloak 26.
 
 El proceso de negocio que se asegura es el **ciclo de venta**:
 

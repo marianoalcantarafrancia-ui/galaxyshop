@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
  * El caso de negocio (catalogos, productos y pedidos de una tienda de
  * comestibles) esta tomado del proyecto de ejemplo publico
  * https://github.com/jannie-louwrens/spring-boot-keycloak-angular
- * y actualizado a Spring Boot 3 + Keycloak 26.
+ * y actualizado a Spring Boot 4 + Java 25 + Keycloak 26.
  */
 @SpringBootApplication
 @ConfigurationPropertiesScan

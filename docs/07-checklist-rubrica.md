@@ -213,6 +213,7 @@ Verificable en Postman: *0. Autenticación → Refresh token*.
 | **Colección Postman con aserciones** | 52 peticiones, 82 aserciones, ejecutable con Newman |
 | **Pruebas unitarias de seguridad** | 11 pruebas con MockMvc y tokens simulados, sin necesitar Keycloak |
 | **Script de verificación integral** | `verificar.sh`: 43 comprobaciones sobre el entorno real |
+| **Stack al día** | Spring Boot 4.1 sobre Java 25 LTS, Spring Security 7 y Jackson 3 ([migración documentada](08-migracion-springboot4.md)) |
 
 ---
 

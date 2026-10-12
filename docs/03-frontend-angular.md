@@ -24,7 +24,7 @@ graph TB
     end
 
     K["Keycloak 26<br/>realm galaxyshop"]
-    S["Spring Boot 3<br/>shop-backend"]
+    S["Spring Boot 4<br/>shop-backend"]
 
     M --> KS
     KS -->|"Authorization Code + PKCE"| K

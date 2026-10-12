@@ -1,26 +1,26 @@
 # GalaxyShop — Proyecto final del curso *Security with Keycloak*
 
 Tienda de comestibles en línea asegurada de punta a punta con **Keycloak 26**,
-**Spring Boot 3** y **Angular 20**, resolviendo los diez componentes de la
+**Spring Boot 4** y **Angular 20**, resolviendo los diez componentes de la
 rúbrica del examen final.
 
 | Capa | Tecnología |
 |------|-----------|
 | Identidad | Keycloak 26.4 sobre PostgreSQL 16 (Docker Compose) |
-| Back-end | Spring Boot 3.5 · Java 21 · Spring Security OAuth2 Resource Server |
+| Back-end | Spring Boot 4.1 · Java 25 · Spring Security 7 OAuth2 Resource Server |
 | Front-end | Angular 20 · keycloak-js 26 |
 | Pruebas | Colección Postman (52 peticiones, 82 aserciones) ejecutable con Newman |
 
 El caso de negocio —catálogos, productos y pedidos de una tienda de
 comestibles— está tomado del proyecto de ejemplo público
 [`jannie-louwrens/spring-boot-keycloak-angular`](https://github.com/jannie-louwrens/spring-boot-keycloak-angular)
-y actualizado aquí de Spring Boot 2 / Keycloak 4 a Spring Boot 3 / Keycloak 26.
+y actualizado aquí de Spring Boot 2 / Keycloak 4 a Spring Boot 4 / Keycloak 26.
 
 ---
 
 ## Puesta en marcha
 
-Requisitos: Docker, Java 21, Maven y Node 20+.
+Requisitos: Docker, **Java 25**, Maven 3.9+ y Node 20+.
 
 ```bash
 git clone <este-repositorio> && cd repokeycloak
@@ -123,7 +123,7 @@ carpeta *0. Autenticación* antes que las demás.
 │   ├── themes/galaxyshop/       tema de login personalizado
 │   └── scripts/                 aprovisionamiento como código (Admin REST API)
 │
-├── backend/                     API REST Spring Boot 3
+├── backend/                     API REST Spring Boot 4
 │   └── src/main/java/com/galaxyshop/api/
 │       ├── config/              SecurityFilterChain, OpenAPI, carga inicial
 │       ├── security/            constantes, converter de JWT, servicio granular
@@ -153,6 +153,7 @@ carpeta *0. Autenticación* antes que las demás.
 | [05 · Seguridad granular](docs/05-seguridad-granular.md) | scopes, resources, policies y permissions | #6 |
 | [06 · Spring Security](docs/06-spring-security.md) | filtro, anotaciones y las tres vías de personalización | #4 |
 | [07 · Checklist de la rúbrica](docs/07-checklist-rubrica.md) | cada punto con su evidencia | todos |
+| [08 · Migración a Spring Boot 4](docs/08-migracion-springboot4.md) | starters renombrados, Jackson 3 y Java 25 | — |
 
 ---
 

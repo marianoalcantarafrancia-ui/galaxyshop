@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.6</version>
+    <version>4.1.1</version>
     <relativePath/>
   </parent>
 
@@ -18,19 +18,27 @@
   <description>API REST de GalaxyShop asegurada con Keycloak, Spring Security y OAuth2</description>
 
   <properties>
-    <java.version>21</java.version>
-    <keycloak.version>26.0.4</keycloak.version>
+    <java.version>25</java.version>
+    <springdoc.version>3.1.1</springdoc.version>
   </properties>
 
   <dependencies>
-    <!-- Web + validacion -->
+    <!-- Web MVC. En Spring Boot 4 'spring-boot-starter-web' quedo obsoleto
+         en favor de 'spring-boot-starter-webmvc'. -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- Cliente HTTP sincrono: lo usa la consulta UMA a Keycloak.
+         En Spring Boot 4 RestClient tiene su propio starter. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-restclient</artifactId>
     </dependency>
 
     <!-- Persistencia -->
@@ -44,28 +52,23 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- Seguridad: resource server OAuth2 / JWT emitido por Keycloak -->
+    <!-- Seguridad: resource server OAuth2 / JWT emitido por Keycloak.
+         En Spring Boot 4 el starter se renombro a
+         'spring-boot-starter-security-oauth2-resource-server'. -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+      <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
     </dependency>
 
-    <!-- Cliente de Authorization Services de Keycloak (seguridad granular, UMA 2.0) -->
-    <dependency>
-      <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-authz-client</artifactId>
-      <version>${keycloak.version}</version>
-    </dependency>
-
-    <!-- Documentacion OpenAPI / Swagger UI -->
+    <!-- Documentacion OpenAPI / Swagger UI (linea 3.x: Spring Boot 4) -->
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>2.8.13</version>
+      <version>${springdoc.version}</version>
     </dependency>
 
     <!-- Observabilidad -->
@@ -81,8 +84,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.security</groupId>
-      <artifactId>spring-security-test</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

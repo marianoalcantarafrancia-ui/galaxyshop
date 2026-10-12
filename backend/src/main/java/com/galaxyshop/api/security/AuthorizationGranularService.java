@@ -1,7 +1,7 @@
 package com.galaxyshop.api.security;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
@@ -41,7 +41,8 @@ public class AuthorizationGranularService {
     private static final String UMA_GRANT = "urn:ietf:params:oauth:grant-type:uma-ticket";
 
     private final RestClient http = RestClient.create();
-    private final ObjectMapper json = new ObjectMapper();
+    // Spring Boot 4 trae Jackson 3: JsonMapper sustituye a ObjectMapper
+    private final JsonMapper json = JsonMapper.builder().build();
     private final UsuarioActual usuarioActual;
     private final AppSecurityProperties propiedades;
     private final String tokenEndpoint;

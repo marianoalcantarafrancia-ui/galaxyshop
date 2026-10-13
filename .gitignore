@@ -23,3 +23,9 @@ yarn-error.log*
 
 # Exportaciones temporales de Keycloak
 keycloak/realms/*.tmp.json
+
+# Claude Code
+.claude/
+
+# Documentos PDF
+*.pdf

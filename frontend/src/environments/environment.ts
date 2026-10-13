@@ -5,6 +5,8 @@ export const environment = {
   keycloak: {
     url: 'http://localhost:8081',
     realm: 'galaxyshop',
-    clientId: 'shop-frontend'
+    clientId: 'shop-frontend',
+    // Cliente cuyos roles viajan en resource_access del token
+    resourceClientId: 'shop-backend'
   }
 };

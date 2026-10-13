@@ -85,8 +85,28 @@ export class KeycloakService {
     return this.keycloak?.token;
   }
 
-  /** Roles del token: ROLE_gs-admin, ROLE_catalog-write, ... */
+  /**
+   * Comprueba un rol del usuario.
+   *
+   * Se consulta el TOKEN, que keycloak-js ya tiene parseado en cuanto
+   * termina init(). Es importante que no dependa de this.perfil(), que llega
+   * por HTTP desde /api/me: un guard puede evaluarse antes de esa respuesta y
+   * denegaria el paso a un usuario que si tiene el rol.
+   *
+   * Keycloak reparte los roles en dos sitios y hay que mirar los dos:
+   *   realm_access.roles                     -> gs-admin, gs-auditor...
+   *   resource_access.shop-backend.roles     -> report-read, catalog-write...
+   */
   tieneRol(rol: string): boolean {
+    if (this.keycloak?.authenticated) {
+      if (this.keycloak.hasRealmRole(rol)) {
+        return true;
+      }
+      if (this.keycloak.hasResourceRole(rol, environment.keycloak.resourceClientId)) {
+        return true;
+      }
+    }
+    // Reserva: el perfil de /api/me, por si el token aun no estuviera listo
     return this.roles().includes('ROLE_' + rol);
   }
 

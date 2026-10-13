@@ -212,10 +212,16 @@ print(json.dumps({
 }))
 PY
 )
-  kc_api_soft POST "$AZ/permission/scope" "$body" >/dev/null
+  local code; code=$(kc_api_soft POST "$AZ/permission/scope" "$body")
   local id; id=$(kc_api GET "$AZ/permission?name=$(urlenc "$nombre")" | pick_id name "$nombre")
   [ -n "$id" ] || die "no se pudo crear el permiso '$nombre'"
-  ok "permission '$nombre'"
+  if [ "$code" != "201" ]; then
+    # Ya existia: se actualiza para que un cambio de policies surta efecto
+    kc_api PUT "$AZ/permission/scope/$id" "$body" >/dev/null
+    info "permission '$nombre' (actualizada)"
+  else
+    ok "permission '$nombre'"
+  fi
 }
 
 crear_permission "Ver catalogo" \
@@ -238,13 +244,21 @@ crear_permission "Crear pedido" \
   "Solo clientes registrados generan pedidos" \
   "$R_PEDIDOS" "$S_ORD_CREATE" "UNANIMOUS" "$P_CLIENTE"
 
+# Afirmativa: o bien Gerencia dentro del horario laboral, o bien el
+# administrador funcional, que atiende incidencias a cualquier hora.
+# La restriccion horaria sigue aplicando a Gerencia, porque vive dentro de la
+# policy agregada 'Gerencia en Horario Laboral', que es unanime.
 crear_permission "Anular pedido" \
-  "Solo Gerencia y dentro del horario laboral" \
-  "$R_PEDIDOS" "$S_ORD_CANCEL" "UNANIMOUS" "$P_GER_HORARIO"
+  "Gerencia en horario laboral, o el administrador funcional" \
+  "$R_PEDIDOS" "$S_ORD_CANCEL" "AFFIRMATIVE" "$P_GER_HORARIO" "$P_ADMIN"
 
+# La estrategia es afirmativa: basta con cumplir una de las dos policies.
+# Se incluye 'Rol Administrador' para que TI, que no pertenece a los grupos de
+# Gerencia ni de Auditoria, tenga el acceso que le atribuye la matriz RACI y
+# que el SecurityFilterChain ya le concede.
 crear_permission "Ver reportes" \
-  "Gerencia o Auditoria" \
-  "$R_REPORTES" "$S_REP_VIEW" "AFFIRMATIVE" "$P_GER_O_AUD"
+  "Gerencia, Auditoria o el administrador funcional" \
+  "$R_REPORTES" "$S_REP_VIEW" "AFFIRMATIVE" "$P_GER_O_AUD" "$P_ADMIN"
 
 echo >&2
 ok "Seguridad granular configurada: 7 scopes, 3 resources, 8 policies, 7 permissions"

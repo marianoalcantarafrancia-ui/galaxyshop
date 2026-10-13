@@ -15,6 +15,8 @@
     "cibaBackchannelTokenDeliveryMode": "poll",
     "cibaExpiresIn": "120",
     "cibaInterval": "5",
+    "clientOfflineSessionIdleTimeout": "0",
+    "clientOfflineSessionMaxLifespan": "0",
     "clientSessionIdleTimeout": "1800",
     "clientSessionMaxLifespan": "36000",
     "oauth2DeviceCodeLifespan": "600",
@@ -759,7 +761,8 @@
             "id.token.claim": "true",
             "introspection.token.claim": "true",
             "jsonType.label": "String",
-            "multivalued": "true"
+            "multivalued": "true",
+            "userinfo.token.claim": "true"
           },
           "consentRequired": false,
           "id": "3569339a-d928-4019-a697-59cb0cbcf4a7",
@@ -863,7 +866,8 @@
             "claim.name": "nivel_reporte",
             "claim.value": "detallado",
             "id.token.claim": "false",
-            "jsonType.label": "String"
+            "jsonType.label": "String",
+            "userinfo.token.claim": "false"
           },
           "consentRequired": false,
           "id": "0eb9aa28-e246-44b8-92ae-6c517208c5cd",
@@ -898,7 +902,8 @@
           "config": {
             "access.token.claim": "true",
             "id.token.claim": "true",
-            "introspection.token.claim": "true"
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true"
           },
           "consentRequired": false,
           "id": "313c4304-2702-4732-857b-0ff1d4479bd3",
@@ -1303,7 +1308,8 @@
             "id.token.claim": "true",
             "introspection.token.claim": "true",
             "jsonType.label": "long",
-            "user.session.note": "AUTH_TIME"
+            "user.session.note": "AUTH_TIME",
+            "userinfo.token.claim": "true"
           },
           "consentRequired": false,
           "id": "158ab423-652c-4d55-bd32-43f8dc557ca2",
@@ -1331,7 +1337,8 @@
             "introspection.token.claim": "true",
             "jsonType.label": "String",
             "multivalued": "true",
-            "user.attribute": "foo"
+            "user.attribute": "foo",
+            "userinfo.token.claim": "true"
           },
           "consentRequired": false,
           "id": "053b8465-4f65-4804-bb72-dbd90c97a776",
@@ -1402,7 +1409,8 @@
           "config": {
             "access.token.claim": "true",
             "id.token.claim": "false",
-            "included.client.audience": "shop-backend"
+            "included.client.audience": "shop-backend",
+            "userinfo.token.claim": "false"
           },
           "consentRequired": false,
           "id": "a9f8ce35-5093-4ec2-8e61-708b4c213553",
@@ -1462,7 +1470,8 @@
             "id.token.claim": "true",
             "introspection.token.claim": "true",
             "jsonType.label": "String",
-            "user.session.note": "clientHost"
+            "user.session.note": "clientHost",
+            "userinfo.token.claim": "true"
           },
           "consentRequired": false,
           "id": "4e43c758-a387-4ef6-8ba4-811d64bd00ae",
@@ -1477,7 +1486,8 @@
             "id.token.claim": "true",
             "introspection.token.claim": "true",
             "jsonType.label": "String",
-            "user.session.note": "client_id"
+            "user.session.note": "client_id",
+            "userinfo.token.claim": "true"
           },
           "consentRequired": false,
           "id": "e673004f-37a4-40ee-ae77-8c516d8050cb",
@@ -1492,7 +1502,8 @@
             "id.token.claim": "true",
             "introspection.token.claim": "true",
             "jsonType.label": "String",
-            "user.session.note": "clientAddress"
+            "user.session.note": "clientAddress",
+            "userinfo.token.claim": "true"
           },
           "consentRequired": false,
           "id": "1688df73-596c-4d3b-8a47-ce0a491e1162",
@@ -1639,6 +1650,7 @@
       "alwaysDisplayInConsole": false,
       "attributes": {
         "client.use.lightweight.access.token.enabled": "true",
+        "post.logout.redirect.uris": "+",
         "realm_client": "false"
       },
       "authenticationFlowBindingOverrides": {},
@@ -1681,6 +1693,7 @@
     {
       "alwaysDisplayInConsole": false,
       "attributes": {
+        "post.logout.redirect.uris": "+",
         "realm_client": "true"
       },
       "authenticationFlowBindingOverrides": {},
@@ -1723,6 +1736,7 @@
     {
       "alwaysDisplayInConsole": false,
       "attributes": {
+        "post.logout.redirect.uris": "+",
         "realm_client": "true"
       },
       "authenticationFlowBindingOverrides": {},
@@ -1837,6 +1851,7 @@
         "access.token.lifespan": "300",
         "backchannel.logout.revoke.offline.tokens": "false",
         "backchannel.logout.session.required": "true",
+        "post.logout.redirect.uris": "+",
         "realm_client": "false"
       },
       "authenticationFlowBindingOverrides": {},
@@ -1930,7 +1945,7 @@
           },
           {
             "config": {
-              "applyPolicies": "[\"Grupo Gerencia\",\"Grupo Auditoria\"]"
+              "applyPolicies": "[\"Grupo Auditoria\",\"Grupo Gerencia\"]"
             },
             "decisionStrategy": "AFFIRMATIVE",
             "description": "Gerencia o Auditoria pueden consultar los reportes",
@@ -2000,24 +2015,24 @@
           },
           {
             "config": {
-              "applyPolicies": "[\"Gerencia en Horario Laboral\"]",
+              "applyPolicies": "[\"Rol Administrador\",\"Gerencia en Horario Laboral\"]",
               "resources": "[\"Pedidos\"]",
               "scopes": "[\"order:cancel\"]"
             },
-            "decisionStrategy": "UNANIMOUS",
-            "description": "Solo Gerencia y dentro del horario laboral",
+            "decisionStrategy": "AFFIRMATIVE",
+            "description": "Gerencia en horario laboral, o el administrador funcional",
             "logic": "POSITIVE",
             "name": "Anular pedido",
             "type": "scope"
           },
           {
             "config": {
-              "applyPolicies": "[\"Gerencia o Auditoria\"]",
+              "applyPolicies": "[\"Rol Administrador\",\"Gerencia o Auditoria\"]",
               "resources": "[\"Reportes\"]",
               "scopes": "[\"report:view\"]"
             },
             "decisionStrategy": "AFFIRMATIVE",
-            "description": "Gerencia o Auditoria",
+            "description": "Gerencia, Auditoria o el administrador funcional",
             "logic": "POSITIVE",
             "name": "Ver reportes",
             "type": "scope"
@@ -2162,6 +2177,7 @@
       "attributes": {
         "backchannel.logout.revoke.offline.tokens": "false",
         "backchannel.logout.session.required": "true",
+        "post.logout.redirect.uris": "+",
         "realm_client": "false"
       },
       "authenticationFlowBindingOverrides": {},
@@ -2207,7 +2223,7 @@
         "backchannel.logout.session.required": "true",
         "oauth2.device.authorization.grant.enabled": "false",
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:4200/*",
+        "post.logout.redirect.uris": "http://localhost:4200/*##http://localhost:4300/*",
         "realm_client": "false"
       },
       "authenticationFlowBindingOverrides": {},
@@ -2246,13 +2262,15 @@
       "protocol": "openid-connect",
       "publicClient": true,
       "redirectUris": [
-        "http://localhost:4200/*"
+        "http://localhost:4200/*",
+        "http://localhost:4300/*"
       ],
       "rootUrl": "http://localhost:4200",
       "serviceAccountsEnabled": false,
       "standardFlowEnabled": true,
       "surrogateAuthRequired": false,
       "webOrigins": [
+        "http://localhost:4300",
         "+",
         "http://localhost:4200"
       ]
@@ -2385,14 +2403,14 @@
       {
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-usermodel-property-mapper",
-            "saml-user-attribute-mapper",
-            "oidc-sha256-pairwise-sub-mapper",
-            "saml-role-list-mapper",
             "oidc-usermodel-attribute-mapper",
-            "oidc-address-mapper",
+            "saml-user-attribute-mapper",
+            "oidc-usermodel-property-mapper",
+            "saml-user-property-mapper",
+            "saml-role-list-mapper",
             "oidc-full-name-mapper",
-            "saml-user-property-mapper"
+            "oidc-sha256-pairwise-sub-mapper",
+            "oidc-address-mapper"
           ]
         },
         "id": "dcabf7ce-02ad-4fad-bc54-980712eabd4e",
@@ -2416,14 +2434,14 @@
       {
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-address-mapper",
-            "oidc-usermodel-attribute-mapper",
-            "saml-user-attribute-mapper",
-            "saml-role-list-mapper",
-            "saml-user-property-mapper",
-            "oidc-usermodel-property-mapper",
             "oidc-full-name-mapper",
-            "oidc-sha256-pairwise-sub-mapper"
+            "saml-user-property-mapper",
+            "oidc-usermodel-attribute-mapper",
+            "saml-role-list-mapper",
+            "oidc-usermodel-property-mapper",
+            "oidc-sha256-pairwise-sub-mapper",
+            "oidc-address-mapper",
+            "saml-user-attribute-mapper"
           ]
         },
         "id": "9faefa2f-f647-4cc9-bd7e-5b94a0c44ec7",
@@ -3286,12 +3304,12 @@
             "client": {
               "realm-management": [
                 "manage-realm",
-                "query-realms",
                 "query-groups",
-                "view-events",
-                "view-authorization",
-                "manage-users",
+                "query-realms",
                 "manage-authorization",
+                "manage-users",
+                "view-authorization",
+                "view-events",
                 "create-client",
                 "query-clients",
                 "impersonation",

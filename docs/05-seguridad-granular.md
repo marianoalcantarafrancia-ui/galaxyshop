@@ -72,8 +72,8 @@ Se usan cuatro tipos distintos a propósito: por **rol**, por **grupo**, por
 | Eliminar del catálogo | Catalogo | `catalog:delete` | Rol Administrador | unánime |
 | Ver pedidos | Pedidos | `order:view` | Cliente o Personal de Tienda | afirmativa |
 | Crear pedido | Pedidos | `order:create` | Rol Cliente | unánime |
-| **Anular pedido** | Pedidos | `order:cancel` | Gerencia en Horario Laboral | **unánime** |
-| Ver reportes | Reportes | `report:view` | Gerencia o Auditoria | afirmativa |
+| **Anular pedido** | Pedidos | `order:cancel` | Gerencia en Horario Laboral **o** Rol Administrador | afirmativa |
+| Ver reportes | Reportes | `report:view` | Gerencia o Auditoria **o** Rol Administrador | afirmativa |
 
 *Unánime* significa que deben cumplirse **todas** las policies; *afirmativa*, que
 basta con una.
@@ -93,13 +93,19 @@ horario laboral:
 | `auditor.shop` | ❌ | ❌ | ❌ | ❌ | ✅ |
 | `admin.shop` | ❌ | ✅ | ✅ | ✅ | ✅ |
 
-Dos lecturas que conviene señalar en la sustentación:
+Tres lecturas que conviene señalar en la sustentación:
 
 - **`gerente.shop` no puede eliminar del catálogo.** Gerencia supervisa, pero la
   operación destructiva está reservada a TI. La jerarquía de roles no implica
   poder absoluto.
 - **`cliente.gold` no puede anular su propio pedido.** Anular mueve dinero: lo
   hace Gerencia, y solo en horario de oficina.
+- **La restricción horaria se aplica a Gerencia, no a TI.** `Anular pedido` es
+  afirmativa y admite dos vías: *Gerencia en Horario Laboral* (agregada y
+  unánime: grupo **Y** horario) o *Rol Administrador*. El administrador
+  funcional atiende incidencias a cualquier hora; el gerente, solo en horario
+  de oficina. Es el mismo permiso resolviéndose por caminos distintos según
+  quién lo pida.
 
 ## 5.7 Cómo lo consulta el backend
 

@@ -61,10 +61,13 @@ app:
     realm-roles-claim: realm_access
     principal-claim: preferred_username
 
-    # Origenes autorizados para el frontend Angular
+    # Origenes autorizados para el frontend Angular.
+    # Se incluye un puerto alternativo por si el 4200 esta ocupado.
     allowed-origins:
       - http://localhost:4200
       - http://127.0.0.1:4200
+      - http://localhost:4300
+      - http://127.0.0.1:4300
 
     # Suma al filtro las reglas de la tabla security_rule
     database-rules-enabled: true

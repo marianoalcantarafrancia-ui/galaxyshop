@@ -10,6 +10,8 @@
 set -uo pipefail
 
 API="${API_URL:-http://localhost:8080}"
+# Puerto del frontend configurable: el 4200 puede estar ocupado por otro proyecto
+FRONT="${FRONT_URL:-http://localhost:4200}"
 KC_BASE="${KC_URL:-http://localhost:8081}"
 KC="$KC_BASE/realms/galaxyshop/protocol/openid-connect/token"
 PASS_TIENDA="${PASS_DEMO:-Galaxy#2026ok}"
@@ -101,10 +103,12 @@ fi
 
 # --- 5: frontend --------------------------------------------------------------
 titulo "Rubrica #5 - Front-end Angular"
-if curl -sf http://localhost:4200 >/dev/null 2>&1; then
-  check "la aplicacion Angular responde" "200" "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:4200)"
+if curl -sf "$FRONT" >/dev/null 2>&1; then
+  check "la aplicacion Angular responde en $FRONT" "200" "$(curl -s -o /dev/null -w '%{http_code}' "$FRONT")"
 else
-  echo "  ${Y}AVISO${O} el frontend no esta levantado (cd frontend && npm start)"
+  echo "  ${Y}AVISO${O} el frontend no responde en $FRONT"
+  echo "  ${Y}     ${O} levantalo con: cd frontend && npm start"
+  echo "  ${Y}     ${O} si usas otro puerto: FRONT_URL=http://localhost:4300 ./verificar.sh"
 fi
 
 # --- 6: seguridad granular ----------------------------------------------------
